@@ -6,8 +6,6 @@ import path from 'path'
 
 const server = http.createServer(async (request, response) => {
   logger(request)
-
-  // 1. Parse URL to separate path from query parameters
   const baseUrl = `http://${request.headers.host}`
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
@@ -15,7 +13,6 @@ const server = http.createServer(async (request, response) => {
   let fileHandle
 
   try {
-    // Home Page - List all files in the storage directory
     if (pathname === '/') {
       const files = await readdir('./storage')
       return response.end(generateBoilerPlate(files))
@@ -23,8 +20,6 @@ const server = http.createServer(async (request, response) => {
 
     const parts = pathname.split('/')
     if (parts[1] !== 'view') return
-
-    // This path is now clean: "docs/long-doc.txt" without "?download=true"
     const relativePath = parts.slice(2).join('/')
     const absolutePath = `./storage/${relativePath}`
 
@@ -59,7 +54,7 @@ const server = http.createServer(async (request, response) => {
       })
     }
   } catch (err) {
-    if (fileHandle) await fileHandle.close() // Clean up on error
+    if (fileHandle) await fileHandle.close()
     console.error('Error caught:', err.message)
     const data = await readFile('./public/404.html')
     response.statusCode = 404

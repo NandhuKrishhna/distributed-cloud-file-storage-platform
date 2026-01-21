@@ -2,6 +2,7 @@ import { MIME_TYPES, generateBoilerPlate, logger } from './utils/index.js'
 import { open, readFile, readdir } from 'fs/promises'
 
 import http from 'http'
+import path from 'path'
 
 const server = http.createServer(async (request, response) => {
   logger(request)
@@ -11,11 +12,6 @@ const server = http.createServer(async (request, response) => {
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
   const isDownload = parsedUrl.searchParams.get('download') === 'true'
-  console.log('[baseUrl]:', baseUrl)
-  console.log('[parsedUrl]:', parsedUrl)
-  console.log('[pathname]:', pathname)
-  console.log('[isDownload]:', isDownload)
-
   let fileHandle
 
   try {
@@ -26,14 +22,11 @@ const server = http.createServer(async (request, response) => {
     }
 
     const parts = pathname.split('/')
-    console.log('[parts]', parts)
     if (parts[1] !== 'view') return
 
     // This path is now clean: "docs/long-doc.txt" without "?download=true"
     const relativePath = parts.slice(2).join('/')
     const absolutePath = `./storage/${relativePath}`
-    console.log('relativePath', relativePath)
-    console.log('absolutePath', absolutePath)
 
     fileHandle = await open(absolutePath)
     const stat = await fileHandle.stat()

@@ -1,5 +1,5 @@
 import {  logger } from './utils/index.js'
-import { open, readFile, readdir } from 'fs/promises'
+import { open, readFile, readdir, unlink } from 'fs/promises'
 
 import http from 'http'
 import path from 'path'
@@ -10,6 +10,7 @@ const server = http.createServer(async (request, response) => {
   logger(request)
   response.setHeader("Access-Control-Allow-Origin","*")
   response.setHeader("Access-Control-Allow-Headers","*")
+  response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS")
   const baseUrl = `http://${request.headers.host}`
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
@@ -32,7 +33,6 @@ const server = http.createServer(async (request, response) => {
       await fileHandle.close()
       fileHandle = undefined
       const files = await readdir(absolutePath, { withFileTypes: true })
-      console.log('Files',files)
       const responseFiles = files.map((file) => ({
         name: file.name,
         type: file.isDirectory() ? 'Directory' : 'File',
@@ -71,7 +71,11 @@ const server = http.createServer(async (request, response) => {
     }else if(request.method === "OPTIONS"){
       response.end("OK")
     }else if(request.method === "POST"){
-      const fileWriteStream = createWriteStream(`./storage/${request.headers.filename}`)
+      const folderPath = request.headers.folder
+      const absolutePath = folderPath 
+      ? `${`./storage/${folderPath}/${request.headers.filename}`}` 
+      : `./storage/${request.headers.filename}`
+      const fileWriteStream = createWriteStream(absolutePath)
       request.pipe(fileWriteStream)
       fileWriteStream.on("finish",()=>{
         response.end("Upload complete")
@@ -79,7 +83,16 @@ const server = http.createServer(async (request, response) => {
     }else if(request.method === "PUT"){
       
     }else if(request.method === "DELETE"){
-      
+      const decodedPath = decodeURIComponent(request.url)
+      const deleteFilePath = `./storage/${decodedPath}`
+      await unlink(deleteFilePath)
+      response.end("File deleted successfully")
+    }else if(request.method === "PATCH"){
+      const decodedPath = decodeURIComponent(request.url)
+      const renameFilePath = `./storage/${decodedPath}`
+      const newPath = `./storage/${request.body.newName}`
+      await rename(renameFilePath,newPath)
+      response.end("File renamed successfully")
     }else {
       response.end("Method Not Allowed")
     }

@@ -1,8 +1,9 @@
-import { MIME_TYPES, generateBoilerPlate, logger } from './utils/index.js'
+import { generateBoilerPlate, logger } from './utils/index.js'
 import { open, readFile, readdir } from 'fs/promises'
 
 import http from 'http'
 import path from 'path'
+import mime from 'mime-types'
 
 const server = http.createServer(async (request, response) => {
   logger(request)
@@ -16,6 +17,9 @@ const server = http.createServer(async (request, response) => {
     if (pathname === '/') {
       const files = await readdir('./storage')
       return response.end(generateBoilerPlate(files))
+    }
+    if(pathname === '/favicon.ico'){
+      return response.end()
     }
 
     const parts = pathname.split('/')
@@ -32,7 +36,7 @@ const server = http.createServer(async (request, response) => {
       await fileHandle.close() // Close immediately for directories
     } else {
       const ext = path.extname(absolutePath).toLowerCase()
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream'
+      const contentType = mime.lookup(ext) || 'application/octet-stream'
 
       if (isDownload) {
         const fileName = relativePath.split('/').pop()

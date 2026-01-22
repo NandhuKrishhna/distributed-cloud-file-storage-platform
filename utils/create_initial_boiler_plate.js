@@ -17,7 +17,7 @@ const generateBoilerPlate = (files, prefix = '') => {
            (file) => `
          <li style="margin-bottom: 10px; font-family: sans-serif;">
           <span style="font-weight: bold; font-size: 18px;">${file}</span>
-          <a href="${dynamicPath}/${file}" style="margin-left: 10px;">View</a>
+          <a href="${dynamicPath}/${file}" style="margin-left: 10px;">Open</a>
           <a href="${dynamicPath}/${file}?download=true" style="margin-left: 10px; color: green;">Download</a>
          </li>`
          )

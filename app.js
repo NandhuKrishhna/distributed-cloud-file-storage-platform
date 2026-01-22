@@ -7,6 +7,7 @@ import mime from 'mime-types'
 
 const server = http.createServer(async (request, response) => {
   logger(request)
+  response.setHeader("Access-Control-Allow-Origin","*")
   const baseUrl = `http://${request.headers.host}`
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
@@ -14,26 +15,26 @@ const server = http.createServer(async (request, response) => {
   let fileHandle
 
   try {
-    if (pathname === '/') {
-      const files = await readdir('./storage')
-      return response.end(generateBoilerPlate(files))
-    }
-    if(pathname === '/favicon.ico'){
+    if (pathname === '/favicon.ico') {
       return response.end()
     }
 
-    const parts = pathname.split('/')
-    if (parts[1] !== 'view') return
-    const relativePath = parts.slice(2).join('/')
+    const relativePath = pathname.startsWith('/') ? pathname.slice(1) : pathname
     const absolutePath = `./storage/${relativePath}`
 
     fileHandle = await open(absolutePath)
     const stat = await fileHandle.stat()
 
     if (stat.isDirectory()) {
-      const files = await readdir(absolutePath)
-      response.end(generateBoilerPlate(files, relativePath))
-      await fileHandle.close() // Close immediately for directories
+      const files = await readdir(absolutePath, { withFileTypes: true })
+      console.log('Files',files)
+      const responseFiles = files.map((file) => ({
+        name: file.name,
+        type: file.isDirectory() ? 'Directory' : 'File',
+      }))
+
+      response.setHeader('Content-Type', 'application/json')
+      response.end(JSON.stringify(responseFiles))
     } else {
       const ext = path.extname(absolutePath).toLowerCase()
       const contentType = mime.lookup(ext) || 'application/octet-stream'
@@ -45,9 +46,11 @@ const server = http.createServer(async (request, response) => {
           `attachment; filename="${fileName}"`
         )
         response.setHeader('Content-Type', 'application/octet-stream')
+        response.setHeader('Content-Length', stat.size)
       } else {
         // This allows the browser to render the video/image/PDF
         response.setHeader('Content-Type', contentType)
+        response.setHeader('Content-Length', stat.size)
       }
 
       const stream = fileHandle.createReadStream()

@@ -1,6 +1,8 @@
 //Purpose : Return Initial HTML of the page;
 
 const generateBoilerPlate = (files, prefix = '') => {
+  console.log("Files", files)
+
   const dynamicPath = prefix ? `/view/${prefix}` : `/view`
   return `<!DOCTYPE html>
 <html lang="en">
@@ -16,9 +18,9 @@ const generateBoilerPlate = (files, prefix = '') => {
          .map(
            (file) => `
          <li style="margin-bottom: 10px; font-family: sans-serif;">
-          <span style="font-weight: bold; font-size: 18px;">${file}</span>
-          <a href="${dynamicPath}/${file}" style="margin-left: 10px;">Open</a>
-          <a href="${dynamicPath}/${file}?download=true" style="margin-left: 10px; color: green;">Download</a>
+          <span style="font-weight: bold; font-size: 18px;">${file.name}</span>
+          <a href="${dynamicPath}/${file.name}" style="margin-left: 10px;">Open</a>
+          ${!file.isDirectory() ? `<a href="${dynamicPath}/${file.name}?download=true" style="margin-left: 10px; color: green;">Download</a>` : ''}
          </li>`
          )
          .join('')}

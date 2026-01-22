@@ -1,13 +1,15 @@
-import { generateBoilerPlate, logger } from './utils/index.js'
+import {  logger } from './utils/index.js'
 import { open, readFile, readdir } from 'fs/promises'
 
 import http from 'http'
 import path from 'path'
 import mime from 'mime-types'
+import { createWriteStream } from 'fs'
 
 const server = http.createServer(async (request, response) => {
   logger(request)
   response.setHeader("Access-Control-Allow-Origin","*")
+  response.setHeader("Access-Control-Allow-Headers","*")
   const baseUrl = `http://${request.headers.host}`
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
@@ -15,7 +17,8 @@ const server = http.createServer(async (request, response) => {
   let fileHandle
 
   try {
-    if (pathname === '/favicon.ico') {
+    if(request.method === "GET"){
+      if (pathname === '/favicon.ico') {
       return response.end()
     }
 
@@ -26,6 +29,8 @@ const server = http.createServer(async (request, response) => {
     const stat = await fileHandle.stat()
 
     if (stat.isDirectory()) {
+      await fileHandle.close()
+      fileHandle = undefined
       const files = await readdir(absolutePath, { withFileTypes: true })
       console.log('Files',files)
       const responseFiles = files.map((file) => ({
@@ -57,9 +62,28 @@ const server = http.createServer(async (request, response) => {
       stream.pipe(response)
 
       stream.on('close', async () => {
-        if (fileHandle) await fileHandle.close()
+        if (fileHandle) {
+             await fileHandle.close()
+             fileHandle = undefined
+        }
       })
     }
+    }else if(request.method === "OPTIONS"){
+      response.end("OK")
+    }else if(request.method === "POST"){
+      const fileWriteStream = createWriteStream(`./storage/${request.headers.filename}`)
+      request.pipe(fileWriteStream)
+      fileWriteStream.on("finish",()=>{
+        response.end("Upload complete")
+      })
+    }else if(request.method === "PUT"){
+      
+    }else if(request.method === "DELETE"){
+      
+    }else {
+      response.end("Method Not Allowed")
+    }
+    
   } catch (err) {
     if (fileHandle) await fileHandle.close()
     console.error('Error caught:', err.message)

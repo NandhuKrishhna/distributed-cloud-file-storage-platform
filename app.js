@@ -1,5 +1,5 @@
 import {  logger } from './utils/index.js'
-import { open, readFile, readdir, unlink } from 'fs/promises'
+import { open, readFile, readdir, rename, unlink } from 'fs/promises'
 
 import http from 'http'
 import path from 'path'
@@ -10,11 +10,12 @@ const server = http.createServer(async (request, response) => {
   logger(request)
   response.setHeader("Access-Control-Allow-Origin","*")
   response.setHeader("Access-Control-Allow-Headers","*")
-  response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS")
+  response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS,PATCH")
   const baseUrl = `http://${request.headers.host}`
   const parsedUrl = new URL(request.url, baseUrl)
   const pathname = decodeURIComponent(parsedUrl.pathname)
   const isDownload = parsedUrl.searchParams.get('download') === 'true'
+  const action = parsedUrl.searchParams.get('action')
   let fileHandle
 
   try {
@@ -87,12 +88,22 @@ const server = http.createServer(async (request, response) => {
       const deleteFilePath = `./storage/${decodedPath}`
       await unlink(deleteFilePath)
       response.end("File deleted successfully")
-    }else if(request.method === "PATCH"){
-      const decodedPath = decodeURIComponent(request.url)
-      const renameFilePath = `./storage/${decodedPath}`
-      const newPath = `./storage/${request.body.newName}`
-      await rename(renameFilePath,newPath)
+    }else if(request.method === "PATCH" && action=== "rename") {
+     try {
+      request.on("data", (chunk)=>{
+      const data = JSON.parse(chunk.toString())
+      console.log("data", data)
+      const {newName , oldName , folder} = data
+      const newFilePath = folder? `./storage/${folder}/${newName}` : `./storage/${newName}`
+      const oldFilePath = folder? `./storage/${folder}/${oldName}` : `./storage/${oldName}`
+      rename(oldFilePath,newFilePath)
       response.end("File renamed successfully")
+    })
+     } catch (error) {
+      console.error('Error renaming file:', error)
+      response.statusCode = 500
+      response.end('Failed to rename file')
+     }
     }else {
       response.end("Method Not Allowed")
     }

@@ -1,6 +1,10 @@
 {
   "type": "module",
+  "scripts": {
+    "dev":"node --watch express.js"
+  },
   "dependencies": {
+    "express": "^5.2.1",
     "mime-types": "^3.0.2"
   }
 }

@@ -1,6 +1,6 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { readdir, rename, unlink } from "fs/promises";
+import { mkdir, readdir, rename, unlink } from "fs/promises";
 import cors from "cors"
 const PORT = 3000
 const app = express()
@@ -93,6 +93,19 @@ app.get('/files/download', async(req,res)=>{
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: "File upload failed" })
+    }
+})
+
+app.post('/folder/create', async(req,res)=>{
+    try {
+        const {directoryPath} = req.query;
+        const {folderName} = req.body
+        const absolutePath = directoryPath ?  `./storage/${directoryPath}/${folderName}` :`./storage/${folderName}`; 
+        await mkdir(absolutePath, {recursive: true})
+        res.status(200).json({ message: "Folder created successfully" })
+    } catch (error) {
+        console.log(error)
+        next(error)
     }
 })
 app.use((err, req, res, next) => {

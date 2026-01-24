@@ -1,9 +1,10 @@
 {
   "type": "module",
   "scripts": {
-    "dev":"node --watch express.js"
+    "dev": "node --watch express.js"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "mime-types": "^3.0.2"
   }

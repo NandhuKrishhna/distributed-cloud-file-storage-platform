@@ -27,8 +27,8 @@ authRouter.get('/logout', checkAuthHelper, (req, res, next) => {
 })
 authRouter.get('/',checkAuthHelper, (req, res, next) => {
     try {
-        const {user} = req.cookies
-        res.json({email:user.email, name:user.name, id:user.id})
+        const {email,name,_id } = req.user
+        res.json({email,name,_id})
     } catch (error) {
         next(error)
     }

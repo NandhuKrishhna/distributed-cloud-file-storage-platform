@@ -10,7 +10,7 @@ import dotenv from "dotenv"
 dotenv.config()
 const PORT = process.env.PORT || 3000
 const app = express()
-app.use(cookieParser())
+app.use(cookieParser(process.env.MY_SECRET_KEY))
 app.use(express.json())
 app.use(requestLogger)
 

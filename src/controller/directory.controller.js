@@ -74,6 +74,9 @@ const getDirectoryController = async (req, res, next) => {
 const createDirectoryController = async(req,res,next)=>{
     try {
      const {_id} = req.user;
+
+
+     
      const {name , parentDirId} = req.body;
      const isRootDirectory = parentDirId === null;
      const directory = await DirectoryModel.create({

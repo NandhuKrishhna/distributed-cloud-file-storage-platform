@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
 import { DirectoryModel, SessionModel, UserModel } from "../models/index.js";
+
+
 const userLoginController = async(req, res, next)=>{
  
     try {
@@ -9,10 +11,17 @@ const userLoginController = async(req, res, next)=>{
         return res.status(401).json({ message: "User not found or Invalid password or Email" })
     }
 
-    const isPasswordMatched = await bcrypt.compare(password, existingUser.password)
+    const isPasswordMatched = await existingUser.comparePassword(password)
     if(!isPasswordMatched){
         return res.status(401).json({ message: "Invalid Password" })
     }
+
+    const allSession = await SessionModel.find({userId : existingUser.id})
+    if(allSession.length >=2){
+       const firstLoggedInSession = allSession[0]
+       await firstLoggedInSession.deleteOne()
+    }
+    
     const session = await SessionModel.create({
         userId : existingUser._id,
     })
@@ -28,7 +37,6 @@ const userLoginController = async(req, res, next)=>{
     next(error)
    }
 }
-
 const registerUserController = async(req, res, next)=>{
     try {
         const {email , name , password} = req.body;
@@ -36,13 +44,11 @@ const registerUserController = async(req, res, next)=>{
         if(existingUser){
             return res.status(401).json({ message: "User already exists" })
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
         // Create user
         const user = await UserModel.create({
             email , 
             name , 
-            password : hashedPassword
+            password 
         })
 
         // Create root directory
@@ -70,10 +76,21 @@ const registerUserController = async(req, res, next)=>{
         next(error)
     }
 }
-
 const logoutUserController = async(req, res, next) => {
     try {
-        await SessionModel.findByIdAndDelete(req.user._id)
+        await SessionModel.findByIdAndDelete(req.signedCookies.token)
+        res.clearCookie("token", {
+            httpOnly: true,
+            signed: true,
+        })
+        res.json({ message: "User logged out successfully" })
+    } catch (error) {
+        next(error)
+    }
+}
+const logoutAllUserController = async(req, res, next) => {
+    try {
+        await SessionModel.deleteMany({userId : req.user._id})
         res.clearCookie("token", {
             httpOnly: true,
             signed: true,
@@ -86,4 +103,4 @@ const logoutUserController = async(req, res, next) => {
 
 
 
-export {userLoginController, registerUserController, logoutUserController}
+export {userLoginController, registerUserController, logoutUserController, logoutAllUserController}

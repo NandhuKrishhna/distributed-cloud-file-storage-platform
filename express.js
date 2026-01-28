@@ -42,6 +42,6 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, async () => {
     await connectToDB()
-    await seedUser()
+    // await seedUser()
     console.log(`Server is running on port ${PORT}`)
 })

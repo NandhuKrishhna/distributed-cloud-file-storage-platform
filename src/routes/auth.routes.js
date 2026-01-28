@@ -1,30 +1,14 @@
 import { Router } from "express";
-import { checkAuthHelper } from "../middleware/auth.middleware.js";
-import { userLoginController } from "../controller/user.controller.js";
-
-
-
+import { checkAuthHelper } from "../middleware/index.js";
+import { logoutUserController, registerUserController, userLoginController } from "../controller/user.controller.js";
 
 
 
 const authRouter = Router()
 
-
-
-
-authRouter.post('/register', (req, res) => {
-    res.json({ message: "User registered successfully" })
-})
-
+authRouter.post('/register', registerUserController)
 authRouter.post('/login', userLoginController)
-authRouter.get('/logout', checkAuthHelper, (req, res, next) => {
-    try {
-        res.clearCookie("user")
-        res.json({ message: "User logged out successfully" })
-    } catch (error) {
-        next(error)
-    }
-})
+authRouter.get('/logout', checkAuthHelper, logoutUserController)
 authRouter.get('/',checkAuthHelper, (req, res, next) => {
     try {
         const {email,name,_id } = req.user

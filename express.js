@@ -17,15 +17,16 @@ app.use(requestLogger)
 app.use(cors({
     origin: [
         "http://localhost:5173",
+        "http://192.168.1.3:5173",
+
     ],
     credentials: true
 }));
 
 // 3. Static File Serving
 app.use(express.static("storage"))
-app.get("/user", (req,res, next)=>{
-    res.set("Location", "/helloworld")
-    res.status(301).end()
+app.get("/", (req,res, next)=>{
+    res.status(200).json({message: "Server is running"})
 })
 app.use("/files",checkAuthHelper, fileRouter)
 app.use("/directory",checkAuthHelper, directoryRouter)
@@ -40,8 +41,9 @@ app.use((err, req, res, next) => {
 
     
 
-app.listen(PORT, async () => {
+app.listen(PORT, "0.0.0.0", async () => {
     await connectToDB()
     // await seedUser()
     console.log(`Server is running on port ${PORT}`)
+    console.log(`Network access via: http://<your-ip-address>:${PORT}`)
 })

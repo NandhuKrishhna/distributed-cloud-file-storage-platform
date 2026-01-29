@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config()
 import express from "express";
 import cookieParser from "cookie-parser"
 import cors from "cors"
@@ -5,9 +7,7 @@ import { directoryRouter, fileRouter, authRouter } from "./src/routes/index.js";
 import { checkAuthHelper, requestLogger } from "./src/middleware/index.js";
 import { connectToDB } from "./src/config/mongo.connection.js";
 import { seedUser } from "./src/utils/seedUser.js";
-import dotenv from "dotenv"
 
-dotenv.config()
 const PORT = process.env.PORT || 3000
 const app = express()
 app.use(cookieParser(process.env.MY_SECRET_KEY))

@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+
 import { DirectoryModel, SessionModel, UserModel } from "../models/index.js";
 
 
@@ -59,17 +59,16 @@ const registerUserController = async(req, res, next)=>{
             userId : user._id
         });
 
-
+        // Create session
         const session = await SessionModel.create({
-        userId : user._id,
-    })
+            userId : user._id,
+        })
 
-
-  res.cookie("token", session.id, {
-    httpOnly: true,
-    signed: true,
-    maxAge: 60 * 1000 * 60 * 24 * 7,
-  });
+        res.cookie("token", session.id, {
+            httpOnly: true,
+            signed: true,
+            maxAge: 60 * 1000 * 60 * 24 * 7,
+        });
         
         res.json({status : true ,  message: "User registered successfully" , user })
     } catch (error) {

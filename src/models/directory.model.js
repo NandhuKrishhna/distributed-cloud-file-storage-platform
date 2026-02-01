@@ -1,5 +1,5 @@
-import { model, Schema } from "mongoose";
-import aggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { model, Schema } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 
 const directorySchema = new Schema(
   {
@@ -9,31 +9,58 @@ const directorySchema = new Schema(
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref:"User",
+      ref: 'User',
       required: true,
     },
     parentDirId: {
       type: Schema.Types.ObjectId,
       default: null,
-      ref: "Directory",
+      ref: 'Directory',
     },
-    isRootDirectory :{
+    isRootDirectory: {
       type: Schema.Types.Boolean,
-      default :false,
+      default: false,
     },
-    type:{
+    type: {
       type: Schema.Types.String,
-      default :"directory",
-      required:false
-    }
+      default: 'directory',
+      required: false,
+    },
+    size: {
+      type: Schema.Types.Number,
+      default: 0,
+      required: false,
+    },
   },
   {
-    timestamps:true,
+    timestamps: true,
   }
-);
+)
+
+directorySchema.methods.increaseSize = async function (bytes) {
+  this.size += bytes
+  await this.save()
+  if (this.parentDirId) {
+    const parent = await this.model('Directory').findById(this.parentDirId)
+    if (parent) {
+      await parent.increaseSize(bytes)
+    }
+  }
+}
+
+directorySchema.methods.decreaseSize = async function (bytes) {
+  this.size -= bytes
+  await this.save()
+  if (this.parentDirId) {
+    const parent = await this.model('Directory').findById(this.parentDirId)
+    if (parent) {
+      await parent.decreaseSize(bytes)
+    }
+  }
+}
 
 directorySchema.plugin(aggregatePaginate)
 
-const DirectoryModel = model("Directory", directorySchema);
+const DirectoryModel = model('Directory', directorySchema)
 
-export default DirectoryModel;
+export default DirectoryModel

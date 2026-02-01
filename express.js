@@ -47,7 +47,7 @@ app.post('/call-deployment-webhook', (req, res, next) => {
   deployment.on('close', (code) => {
     console.log(`child process exited with code ${code}`)
   })
-  res.status(200).json({ message: 'Webhook called' })
+  res.status(200).json({ message: 'Webhook called through CI/CD Pipeline' })
 })
 
 app.use('/files', checkAuthHelper, fileRouter)

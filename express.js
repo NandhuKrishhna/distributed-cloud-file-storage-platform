@@ -65,4 +65,13 @@ app.listen(PORT, '0.0.0.0', async () => {
   await connectToDB()
   // await seedUser()
   console.log(`Server is running on port ${PORT}`)
+
+  // Log the new process status after restart
+  const { exec } = await import('child_process')
+  exec('pm2 list', (err, stdout, stderr) => {
+    if (stdout) {
+      console.log('--- Post-Deployment Process List ---')
+      console.log(stdout)
+    }
+  })
 })

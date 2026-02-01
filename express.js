@@ -34,9 +34,9 @@ app.get('/', (req, res, next) => {
   res.status(200).json({ message: 'Server is running' })
 })
 
-app.post('/call-deploayment-webhook', (req, res, next) => {
-  console.log('Webhook called')
-  console.log(req.body)
+app.post('/call-deployment-webhook', (req, res, next) => {
+  console.log('Webhook called......')
+  console.log('[Webhook Body]: ', req.body)
   const deployment = spawn('bash', ['./deployment.sh'])
   deployment.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`)
@@ -47,9 +47,9 @@ app.post('/call-deploayment-webhook', (req, res, next) => {
   deployment.on('close', (code) => {
     console.log(`child process exited with code ${code}`)
   })
-
   res.status(200).json({ message: 'Webhook called' })
 })
+
 app.use('/files', checkAuthHelper, fileRouter)
 app.use('/directory', checkAuthHelper, directoryRouter)
 app.use('/auth', authRouter)

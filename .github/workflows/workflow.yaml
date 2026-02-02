@@ -29,20 +29,11 @@ jobs:
       - name: Deploy backend on EC2
         run: |
           echo  [ GIT REPO ] : $GITHUB_REPOSITORY
-          ssh "${SERVER_USER}@${SERVER_HOST}" "bash -s" -- "$GITHUB_REPOSITORY" << 'EOF'
-            # Capture the first argument passed to the script
-            REPO_NAME=$1 
-            
-            set -e
+          ssh "${SERVER_USER}@${SERVER_HOST}" "bash -s" << 'EOF'
+            set -e 
+            cd /home/ubuntu/distributed-cloud-file-storage-platform
 
-            cd $REMOTE_DIR
-            
             echo 'Pulling latest release...'
-            if [ ! -d .git ]; then
-              echo "Initializing git repo..."
-              git init
-              git remote add origin https://github.com/${REPO_NAME}.git
-            fi
             git fetch --all --tags
 
             git checkout ${{ github.ref_name }}

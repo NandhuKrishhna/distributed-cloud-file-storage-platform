@@ -32,7 +32,7 @@ app.use(
 // 3. Static File Serving
 app.use(express.static('storage'))
 app.get('/', (req, res, next) => {
-  res.status(200).json({ message: 'Welcome to Cloud File Storage API' })
+  res.status(200).json({ message: 'Welcome to File Server' })
 })
 
 app.post('/call-deployment-webhook', (req, res, next) => {

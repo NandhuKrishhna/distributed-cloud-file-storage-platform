@@ -1,11 +1,12 @@
 import { authRouter, directoryRouter, fileRouter } from './src/routes/index.js'
 import { checkAuthHelper, requestLogger } from './src/middleware/index.js'
-import { spawn } from 'child_process'
+
 import { connectToDB } from './src/config/mongo.connection.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
+import { spawn } from 'child_process'
 
 dotenv.config()
 
@@ -31,7 +32,7 @@ app.use(
 // 3. Static File Serving
 app.use(express.static('storage'))
 app.get('/', (req, res, next) => {
-  res.status(200).json({ message: 'Server is running in production mode' })
+  res.status(200).json({ message: 'This is Nandhu Krishna testing webhook' })
 })
 
 app.post('/call-deployment-webhook', (req, res, next) => {

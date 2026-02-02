@@ -14,6 +14,7 @@ jobs:
       SERVER_HOST: ${{ secrets.SSH_HOST }}
       PM2_APP_NAME: ${{ secrets.PM2_APP_NAME }}
       REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:
       - name: Checkout
@@ -33,6 +34,11 @@ jobs:
             cd $REMOTE_DIR
             
             echo 'Pulling latest release...'
+            if [ ! -d .git ]; then
+              echo "Initializing git repo..."
+              git init
+              git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
+            fi
             git fetch --all --tags
 
             git checkout ${{ github.ref_name }}

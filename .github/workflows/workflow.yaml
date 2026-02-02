@@ -1,0 +1,48 @@
+name: Deploy Cloud Labs Server
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+      SERVER_USER: ${{ secrets.SSH_USER }}
+      SERVER_HOST: ${{ secrets.SSH_HOST }}
+      PM2_APP_NAME: ${{ secrets.PM2_APP_NAME }}
+      REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo $SSH_PRIVATE_KEY > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+      - name: Deploy backend on EC2
+        run: |
+          ssh "${SSH_USER}@${SSH_HOST}" 'bash -s' << 'EOF'
+            set -e
+
+            cd $REMOTE_DIR
+            
+            echo 'Pulling latest release...'
+            git fetch --all --tags
+
+            git checkout ${{ github.ref_name }}
+
+            echo "Installing dependencies (npm ci)..."
+            npm ci --no-audit --no-fund   
+
+            echo "Restarting PM2 app..."
+            pm2 reload $PM2_APP_NAME
+            pm2 status
+
+            echo "Backend Deployed Successfully..."
+          EOF

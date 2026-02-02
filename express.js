@@ -1,12 +1,10 @@
 import { authRouter, directoryRouter, fileRouter } from './src/routes/index.js'
 import { checkAuthHelper, requestLogger } from './src/middleware/index.js'
-
 import { connectToDB } from './src/config/mongo.connection.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
-import { spawn } from 'child_process'
 
 dotenv.config()
 
@@ -35,28 +33,11 @@ app.get('/', (req, res, next) => {
   res.status(200).json({ message: 'Welcome to File Server' })
 })
 
-app.post('/call-deployment-webhook', (req, res, next) => {
-  console.log('Webhook called......')
-  console.log('[Webhook Body]: ', req.body)
-  const deployment = spawn('bash', ['./deployment.sh'])
-  deployment.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`)
-  })
-  deployment.stderr.on('data', (data) => {
-    console.log(`stderr: ${data}`)
-  })
-  deployment.on('close', (code) => {
-    console.log(`child process exited with code ${code}`)
-  })
-  res.status(200).json({ message: 'Webhook called through CI/CD Pipeline' })
-})
-
 app.use('/files', checkAuthHelper, fileRouter)
 app.use('/directory', checkAuthHelper, directoryRouter)
 app.use('/auth', authRouter)
 
 app.use((err, req, res, next) => {
-  console.log('[❌Some Error Occured]')
   console.log(err)
   console.log('[ERROR] : ', err.message)
   res.status(500).json({ error: err.message || 'Internal Server Error' })
@@ -64,15 +45,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, '0.0.0.0', async () => {
   await connectToDB()
-  // await seedUser()
   console.log(`Server is running on port ${PORT}`)
-
-  // Log the new process status after restart
-  const { exec } = await import('child_process')
-  exec('pm2 list', (err, stdout, stderr) => {
-    if (stdout) {
-      console.log('--- Post-Deployment Process List ---')
-      console.log(stdout)
-    }
-  })
 })

@@ -32,7 +32,7 @@ app.use(
 // 3. Static File Serving
 app.use(express.static('storage'))
 app.get('/', (req, res, next) => {
-  res.status(200).json({ message: 'This is Nandhu Krishna testing webhook' })
+  res.status(200).json({ message: 'This is Nandhu Krishna testing webhook...' })
 })
 
 app.post('/call-deployment-webhook', (req, res, next) => {

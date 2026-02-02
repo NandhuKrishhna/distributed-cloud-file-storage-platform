@@ -30,7 +30,9 @@ app.use(
 // 3. Static File Serving
 app.use(express.static('storage'))
 app.get('/', (req, res, next) => {
-  res.status(200).json({ message: 'Welcome to File Server' })
+  res
+    .status(200)
+    .json({ message: 'Welcome to File Server. Deployed using GitHub Actions' })
 })
 
 app.use('/files', checkAuthHelper, fileRouter)

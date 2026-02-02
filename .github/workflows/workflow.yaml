@@ -23,11 +23,11 @@ jobs:
           mkdir -p ~/.ssh
           echo $SSH_PRIVATE_KEY > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
 
       - name: Deploy backend on EC2
         run: |
-          ssh "${SSH_USER}@${SSH_HOST}" 'bash -s' << 'EOF'
+          ssh "${SERVER_USER}@${SERVER_HOST}" 'bash -s' << 'EOF'
             set -e
 
             cd $REMOTE_DIR

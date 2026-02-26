@@ -26,7 +26,7 @@ app.use(
     credentials: true,
   })
 )
-
+console.log('[DEBUG] : ', process.env.ALLOWED_ORIGINS.split(','))
 // 3. Static File Serving
 app.use(express.static('storage'))
 app.get('/', (req, res, next) => {
